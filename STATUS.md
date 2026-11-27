@@ -23,8 +23,18 @@ Updated 27 November 2026.
   proof of 12.13). Those files belong to the IEANTN solution (Task 7), not to the library; they are
   not ported.
 
+## Done since
+
+- Task 5 (reactivation): branch `reactivate-contour-integration` of `Garald1/IEANTN`, with
+  fingerprints added and the author reset; pull request teorth/IEANTN#288.
+
 ## Next
 
-- Task 5: the `ContourIntegration.v1` reactivation pull request (instructions of 27 November).
+- HANDOFF.md at `c736b04` splits Task 1 into two packages. This package keeps only the ICERM
+  material; the five files `Gamma/{DigammaSeries,DigammaFourier}` and
+  `Stieltjes/{VariationBounds,DigammaPairing,FourierIntegral}` move to a second package
+  `WeilExplicitFormula` (name to be confirmed), together with the eight
+  `NumberTheory/WeilExplicitFormula/*` files from `mv-lemma-12-14`. Both repositories are to be
+  public.
 - Task 2, step 2, on a branch based on `reactivate-contour-integration`.
-- Task 6.
+- Task 7 (the IEANTN solutions, by unfolding).
