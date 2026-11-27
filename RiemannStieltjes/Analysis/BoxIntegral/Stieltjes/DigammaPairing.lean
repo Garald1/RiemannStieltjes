@@ -142,7 +142,9 @@ theorem integral_digamma_line_mul_fourier_eq (ha : 0 < a) {J : ℝ → ℂ} (hJ 
       (hG.norm.integrableOn_Icc.mono_set Ioc_subset_Icc_self) hJ.norm) ?_
       (Eventually.of_forall fun z ↦ ?_)
     · exact ((hG.comp continuous_fst).aestronglyMeasurable).mul
-        ((Continuous.aestronglyMeasurable (by fun_prop)).smul hJ.aestronglyMeasurable.comp_snd)
+        ((Continuous.aestronglyMeasurable
+          (f := fun z : ℝ × ℝ ↦ cexp (↑(-2 * π * z.2 * z.1) * I)) (by fun_prop)).smul
+          hJ.aestronglyMeasurable.comp_snd)
     · obtain ⟨t, x⟩ := z
       simp only [Function.uncurry_apply_pair, norm_mul, norm_smul,
         Complex.norm_exp_ofReal_mul_I, one_mul]

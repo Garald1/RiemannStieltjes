@@ -93,15 +93,15 @@ lemma continuous_E : Continuous (E ξ) := by unfold E; fun_prop
 lemma hasDerivAt_e : HasDerivAt (e ξ)
     (e ξ x * ((↑(-2 * Real.pi * ξ) : ℂ) * I)) x := by
   have ha : HasDerivAt (fun (x : ℝ) ↦ (-2 * Real.pi * x : ℝ)) (-2 * Real.pi : ℝ) x := by
-    convert (hasDerivAt_const x ((-2 * Real.pi) : ℝ)).mul (hasDerivAt_id x) using 1
+    convert! (hasDerivAt_const x ((-2 * Real.pi) : ℝ)).mul (hasDerivAt_id x) using 1
     simp
   have h1 : HasDerivAt (fun (x : ℝ) ↦ (-2 * Real.pi * x * ξ : ℝ)) (-2 * Real.pi * ξ : ℝ) x := by
-    convert ha.mul (hasDerivAt_const x (ξ : ℝ)) using 1
+    convert! ha.mul (hasDerivAt_const x (ξ : ℝ)) using 1
     simp
   exact (HasDerivAt.mul_const h1.ofReal_comp I).cexp
 
 lemma hasDerivAt_E {ξ : ℝ} (hξ : ξ ≠ 0) : HasDerivAt (E ξ) (e ξ x) x := by
-  convert (hasDerivAt_const x _).mul (hasDerivAt_e ξ x) using 1
+  convert! (hasDerivAt_const x _).mul (hasDerivAt_e ξ x) using 1
   field_simp [e, hξ, Real.pi_ne_zero, I_ne_zero]
   simp
 
@@ -133,7 +133,7 @@ theorem norm_stieltjesIntegral_E_le (hab : a < b) (hg : BoundedVariationOn g (.I
       simp only [E, inv_neg, mul_inv_rev, inv_I, neg_mul, mul_neg, neg_neg, Complex.norm_mul,
         norm_inv, norm_real, Real.norm_eq_abs, norm_I, Real.pi_nonneg, abs_of_nonneg, norm_ofNat,
         one_mul, norm_e, mul_one]
-      convert HasStieltjesIntegral.of_const
+      convert! HasStieltjesIntegral.of_const
         (g := fun x ↦ (eVariationOn g (.Icc a x)).toReal) using 1
       simp
     _ ≤ _ := by grw [opNorm_mul_le ℝ ℂ]; simp
@@ -143,7 +143,7 @@ against its derivative, here specialized to the Fourier kernel. -/
 theorem hasStieltjesIntegral_E {ξ : ℝ} (hξ : ξ ≠ 0) (hg : RiemannIntegrable a b g) :
     HasStieltjesIntegral a b (mul ℝ ℂ).flip g (E ξ) (∫ x in a..b, e ξ x * g x) := by
   have h (x : ℝ) := hasDerivAt_E x hξ
-  convert HasStieltjesIntegral.of_contDiffOn (F := ℂ) (G := ℂ) ?_ hg using 3 with x
+  convert! HasStieltjesIntegral.of_contDiffOn (F := ℂ) (G := ℂ) ?_ hg using 3 with x
   · simp [(h x).deriv, mul_comm]
   refine (contDiff_one_iff_deriv.mpr ⟨fun x ↦ (h x).differentiableAt, ?_⟩).contDiffOn
   simp only [ne_eq, hξ, not_false_eq_true, deriv_E]

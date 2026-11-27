@@ -155,7 +155,7 @@ theorem integral_triangle_mul_cos {T : ℝ} (hT : 0 < T) (y : ℝ) :
         HasDerivAt (fun t ↦ 2 * (t - t ^ 2 / (2 * T))) (2 * (1 - t / T)) t := by
       intro t _
       have := ((hasDerivAt_id' t).sub ((hasDerivAt_pow 2 t).div_const (2 * T))).const_mul 2
-      convert this using 1
+      convert! this using 1
       field_simp
       ring
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hd
@@ -172,7 +172,7 @@ theorem integral_triangle_mul_cos {T : ℝ} (hT : 0 < T) (y : ℝ) :
       have hc := ((hasDerivAt_id' t).const_mul a).cos
       have hl := ((hasDerivAt_id' t).div_const T).const_sub (1 : ℝ)
       have := (((hl.mul hs).div_const a).sub (hc.div_const (a ^ 2 * T))).const_mul 2
-      convert this using 1
+      convert! this using 1
       field_simp
       ring
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hd

@@ -122,7 +122,7 @@ theorem stieltjesIntegral_of_continuous_of_Stieltjes (hf : ContinuousOn f (.uIcc
 
 theorem HasRiemannIntegral.of_continuous (hf : ContinuousOn f (.uIcc a b)) :
     HasRiemannIntegral a b f (∫ x in a..b, f x) := by
-  convert HasStieltjesIntegral.of_continuous_of_Stieltjes (StieltjesFunction.id) hf
+  convert! HasStieltjesIntegral.of_continuous_of_Stieltjes (StieltjesFunction.id) hf
   exact Real.volume_eq_stieltjes_id
 
 theorem RiemannIntegrable.of_continuous (hf : ContinuousOn f (.uIcc a b)) :
