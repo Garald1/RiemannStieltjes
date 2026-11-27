@@ -206,9 +206,9 @@ theorem integrable_digammaFourierKernel (hb : 0 < b) (ha : 0 < a) :
   set α := 2 * π * a / b
   have hα : 0 < α := by positivity
   have h1 : IntegrableOn (fun v : ℝ ↦ v ^ (1 : ℝ) * Real.exp (-α * v ^ (1 : ℝ))) (Ioi 0) :=
-    integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num) le_rfl hα
+    integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num) one_pos hα
   have h2 : IntegrableOn (fun v : ℝ ↦ v ^ (2 : ℝ) * Real.exp (-α * v ^ (1 : ℝ))) (Ioi 0) :=
-    integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num) le_rfl hα
+    integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num) one_pos hα
   have hg : IntegrableOn (fun v : ℝ ↦ (2 * π) ^ 2 * (v ^ (1 : ℝ) * Real.exp (-α * v ^ (1 : ℝ))) +
       (2 * π) ^ 2 * (2 * π / b) * (v ^ (2 : ℝ) * Real.exp (-α * v ^ (1 : ℝ)))) (Ioi 0) :=
     (h1.const_mul _).add (h2.const_mul _)
@@ -385,7 +385,7 @@ theorem norm_integral_digamma_line_mul_cexp_sub_le' (ha : 0 < a) (hb : 0 < b) :
   have hV : ∀ t : ℝ, HasDerivAt (fun t : ℝ ↦ -cexp (-(2 * π * x * t) * I) / ω)
       (cexp (-(2 * π * x * t) * I)) t := by
     intro t
-    convert (hE t).neg.div_const ω using 1
+    convert! (hE t).neg.div_const ω using 1
     field_simp
   have cE : Continuous fun t : ℝ ↦ cexp (-(2 * π * x * t) * I) := by fun_prop
   have ibp1 := intervalIntegral.integral_mul_deriv_eq_deriv_mul (a := -T) (b := T)

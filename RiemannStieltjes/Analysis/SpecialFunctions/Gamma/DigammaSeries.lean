@@ -263,7 +263,7 @@ theorem hasDerivAt_digammaTerm {s : ℂ} (hs : 0 < s.re) (k : ℕ) :
     HasDerivAt (fun w ↦ digammaTerm w k) (1 / ((k : ℂ) + s) ^ 2) s := by
   have h := ((hasDerivAt_id s).const_add (k : ℂ)).inv (natCast_add_ne_zero_of_re_pos hs k)
   have h2 := (hasDerivAt_const s (1 / ((k : ℂ) + 1))).sub h
-  convert h2 using 1
+  convert! h2 using 1
   · funext w
     simp [digammaTerm, one_div]
   · simp only [id_eq]
@@ -340,7 +340,7 @@ theorem hasSum_deriv_digamma {s : ℂ} (hs : 0 < s.re) :
       filter_upwards [hU.mem_nhds hs] with w hw using (hasSum_digamma hw).tsum_eq.symm
     rw [← this.deriv_eq, deriv_add_const]
   rw [heq]
-  convert h using 1
+  convert! h using 1
   funext k
   exact (hasDerivAt_digammaTerm hs k).deriv.symm
 
@@ -349,7 +349,7 @@ theorem hasDerivAt_one_div_natCast_add_sq {s : ℂ} (hs : 0 < s.re) (k : ℕ) :
   have hks := natCast_add_ne_zero_of_re_pos hs k
   have h1 : HasDerivAt (fun w : ℂ ↦ (k : ℂ) + w) 1 s := (hasDerivAt_id s).const_add _
   have h3 := (hasDerivAt_const s (1 : ℂ)).div (h1.mul h1) (mul_ne_zero hks hks)
-  convert h3 using 1
+  convert! h3 using 1
   · funext w
     simp only [Pi.div_apply, Pi.mul_apply]
     ring
@@ -391,7 +391,7 @@ theorem hasSum_deriv_deriv_digamma {s : ℂ} (hs : 0 < s.re) :
       filter_upwards [hU.mem_nhds hs] with w hw using (hasSum_deriv_digamma hw).tsum_eq.symm
     exact this.deriv_eq
   rw [heq]
-  convert h using 1
+  convert! h using 1
   funext k
   exact (hasDerivAt_one_div_natCast_add_sq hs k).deriv.symm
 
@@ -406,7 +406,7 @@ open MeasureTheory
 theorem integrableOn_sq_mul_cexp_neg_mul_Ioi {c : ℂ} (hc : 0 < c.re) :
     IntegrableOn (fun u : ℝ ↦ (u : ℂ) ^ 2 * cexp (-(c * u))) (Ioi 0) := by
   have hr : IntegrableOn (fun u : ℝ ↦ u ^ (2 : ℝ) * Real.exp (-c.re * u ^ (1 : ℝ))) (Ioi 0) :=
-    integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num) le_rfl hc
+    integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num) one_pos hc
   refine Integrable.mono' hr (Continuous.aestronglyMeasurable (by fun_prop)) ?_
   refine (ae_restrict_iff' measurableSet_Ioi).2 (Eventually.of_forall fun u _ ↦ ?_)
   rw [norm_mul, norm_pow, norm_real, Real.norm_eq_abs, sq_abs, norm_exp, Real.rpow_two,
@@ -427,10 +427,10 @@ theorem integral_sq_mul_cexp_neg_mul_Ioi {c : ℂ} (hc : 0 < c.re) :
         (2 * z / c + 2 / c ^ 2) z := by
       have := (((hasDerivAt_pow 2 z).div_const c).add
         (((hasDerivAt_id z).const_mul (2 : ℂ)).div_const (c ^ 2))).add_const (2 / c ^ 3)
-      convert this using 1
+      convert! this using 1
       simp only [Nat.cast_ofNat, mul_one]
       ring
-    convert (h1.mul h2).neg using 1
+    convert! (h1.mul h2).neg using 1
     field_simp
     ring
   have hF : ∀ u : ℝ, HasDerivAt (fun u : ℝ ↦ G u) ((u : ℂ) ^ 2 * cexp (-(c * u))) u :=

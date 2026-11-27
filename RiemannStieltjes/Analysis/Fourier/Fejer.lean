@@ -413,7 +413,7 @@ theorem tendstoUniformlyOn_fejerMean (hf : Function.Periodic f (2 * π))
     (by positivity) hδpos (hfx (-π) π) hc
   rw [integral_fejerKernel] at e
   have hbound : ∫ t in -π..π, (‖f (x + t)‖ + ‖f x‖) ≤ C := by
-    rw [intervalIntegral.integral_add (hfx _ _).norm intervalIntegral.intervalIntegrable_const,
+    rw [intervalIntegral.integral_add (hfx _ _).norm intervalIntegrable_const,
       integral_norm_comp_add hf x, intervalIntegral.integral_const, smul_eq_mul, hC]
     have := hM x hx
     nlinarith [pi_pos]

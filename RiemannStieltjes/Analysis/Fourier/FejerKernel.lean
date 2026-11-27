@@ -331,7 +331,7 @@ theorem tendsto_integral_fejerKernel {δ : ℝ} (hδ : 0 < δ) (hδπ : δ ≤ �
     calc ∫ t in δ..π, fejerKernel n t ≤ ∫ _t in δ..π, π ^ 2 / (2 * (n + 1) * δ ^ 2) := by
           refine intervalIntegral.integral_mono_on hδπ
             ((continuous_fejerKernel n).intervalIntegrable _ _)
-            intervalIntegral.intervalIntegrable_const
+            intervalIntegrable_const
             fun t ht ↦ fejerKernel_le_of_le_abs n hδ ?_ ?_
           · rw [abs_of_pos (hδ.trans_le ht.1)]; exact ht.1
           · rw [abs_of_pos (hδ.trans_le ht.1)]; exact ht.2

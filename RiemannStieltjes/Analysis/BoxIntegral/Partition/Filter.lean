@@ -96,7 +96,7 @@ theorem Riemann_toFilteriUnion_eventually_iff_mesh (P : TaggedPrepartition I →
      := by
   simp only [Riemann_toFilteriUnion_eventually_iff, IsSubordinate, Box.Icc_def, IsHenstock,
     Set.mem_Icc, and_imp, Subtype.exists, Set.mem_Ioi, exists_prop, gt_iff_lt]
-  refine ⟨ fun ⟨ r, hpos, hr ⟩ ↦ ⟨ ⟨ r, le_of_lt hpos ⟩, hpos, ?_ ⟩,
+  refine ⟨ fun ⟨ r, hpos, hr ⟩ ↦ ⟨ NNReal.mk r (le_of_lt hpos), hpos, ?_ ⟩,
     fun ⟨ ε, (εpos : 0 < ε), hε ⟩ ↦ ⟨ (ε/2 : NNReal), by positivity, ?_ ⟩ ⟩
   · replace hpos := le_of_lt hpos
     peel hr with π h
@@ -120,7 +120,7 @@ theorem Riemann_toFilteriUnion_eventually_iff_mesh (P : TaggedPrepartition I →
   have hsub2 := hsub J hJi J.upper_mem_Icc
   specialize hhen J hJi
   simp only [Pi.le_def, Metric.mem_closedBall, dist_pi_def,
-    nndist, NNReal.coe_le_coe, Finset.sup_le_iff, Finset.mem_univ, forall_const] at hhen hsub1 hsub2
+    NNReal.coe_le_coe, Finset.sup_le_iff, Finset.mem_univ, forall_const] at hhen hsub1 hsub2
   replace hsub1 : dist (J.lower i) (π.tag J i) ≤ (ε/2 : NNReal) := hsub1 i
   replace hsub2 : dist (J.upper i) (π.tag J i) ≤ (ε/2 : NNReal) := hsub2 i
   simp at hsub1 hsub2

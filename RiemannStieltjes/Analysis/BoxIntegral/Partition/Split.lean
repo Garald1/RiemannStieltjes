@@ -39,8 +39,8 @@ theorem splitLower_unbot_upper_apply_self {I : Box ι} {i : ι} {x : ℝ}
     (h : I.splitLower i x ≠ ⊥) :
     ((I.splitLower i x).unbot h).upper i = min x (I.upper i) := by
   classical
-  have h_coe := WithBot.coe_unbot (I.splitLower i x) h
-  unfold splitLower at h_coe
+  have h_coe : (((I.splitLower i x).unbot h : Box ι) : WithBot (Box ι)) =
+      mk' I.lower (update I.upper i (min x (I.upper i))) := WithBot.coe_unbot _ h
   have := congrArg (· i) (mk'_eq_coe.mp h_coe.symm).2.symm
   simpa using this
 

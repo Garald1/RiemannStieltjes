@@ -14,7 +14,6 @@ import Mathlib.Tactic.Peel
 /-!
 # Additions to `Mathlib.Analysis.BoxIntegral.Basic`
 
-* congruence lemmas for `integralSum` and `HasIntegral`;
 * the standard (mesh-size) description of the Riemann integral;
 * linearity of `BoxIntegral.HasIntegral` in the volume, intertwining by continuous linear maps,
   and additivity along a partition.
@@ -39,25 +38,9 @@ open TaggedPrepartition
 
 local notation "ℝⁿ" => ι → ℝ
 
-theorem integralSum_congr {f₁ f₂ : ℝⁿ → E} {vol₁ vol₂ : ι →ᵇᵃ E →L[ℝ] F}
-  (hf : EqOn f₁ f₂ I.Icc) (hvol : EqOn vol₁ vol₂ π.boxes) :
-    integralSum f₁ vol₁ π = integralSum f₂ vol₂ π := by
-  unfold integralSum
-  refine Finset.sum_congr rfl (fun J hJ ↦ ?_)
-  congr 1
-  · exact hvol hJ
-  exact hf (π.tag_mem_Icc J)
+-- `integralSum_congr` and `hasIntegral_congr` are now in Mathlib, with the same statements.
 
 variable [Fintype ι]
-
-theorem hasIntegral_congr (I : Box ι) (l : IntegrationParams) {f₁ f₂ : ℝⁿ → E}
-    {vol₁ vol₂ : ι →ᵇᵃ E →L[ℝ] F}
-    (hf : EqOn f₁ f₂ I.Icc) (hvol : EqOn vol₁ vol₂ (Set.Iic I)) (y : F) :
-    HasIntegral I l f₁ vol₁ y ↔ HasIntegral I l f₂ vol₂ y := by
-  unfold HasIntegral
-  refine Filter.tendsto_congr (fun π ↦ integralSum_congr hf (hvol.mono ?_))
-  intro J hJ
-  simp [π.le_of_mem' J hJ]
 
 variable {l : IntegrationParams} {f g : (ι → ℝ) → E} {vol : ι →ᵇᵃ E →L[ℝ] F} {y y' : F}
 

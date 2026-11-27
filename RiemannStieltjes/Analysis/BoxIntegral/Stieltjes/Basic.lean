@@ -88,40 +88,13 @@ lemma BoundedVariationOn.ofSubsingleton {α : Type*} [LinearOrder α] {E : Type*
 [PseudoEMetricSpace E] {f : α → E} {s : Set α} (h : s.Subsingleton) : BoundedVariationOn f s := by
   simp [BoundedVariationOn, h]
 
-/-- Move to Mathlib.Topology.EMetricSpace.BoundedVariation -/
-@[simp]
-theorem MonotoneOn.eVariationOn_eq {α : Type*} [LinearOrder α] {f : α → ℝ} {s : Set α}
-    (hf : MonotoneOn f s) {a b : α} (hab : a ≤ b) (as : a ∈ s) (bs : b ∈ s) :
-    eVariationOn f (s ∩ .Icc a b) = ENNReal.ofReal (f b - f a) := by
-  have h : BoundedVariationOn f (s ∩ .Icc a b) := hf.locallyBoundedVariationOn a b as bs
-  apply eq_of_le_of_ge (eVariationOn_le hf as bs) (ENNReal.ofReal_le_of_le_toReal _)
-  grw [← BoundedVariationOn.dist_le h (x := a) (y := b)] <;> grind [Real.dist_eq]
-
-/-- Move to Mathlib.Topology.EMetricSpace.BoundedVariation -/
-@[simp]
-lemma eVariationOn_id {a b : ℝ} (hab : a ≤ b) {s : Set ℝ} (as : a ∈ s) (bs : b ∈ s) :
-    eVariationOn id (s ∩ .Icc a b) = ENNReal.ofReal (b - a) := by
-  convert MonotoneOn.eVariationOn_eq ?_ hab as bs
-  intro x _ y _ hxy; simpa using hxy
-
-@[simp]
-lemma eVariationOn_id_Icc {a b : ℝ} (hab : a ≤ b) :
-  eVariationOn id (.Icc a b) = ENNReal.ofReal (b - a) := by
-  simpa using eVariationOn_id hab (s := Set.univ) (by simp) (by simp)
+-- `MonotoneOn.eVariationOn_eq`, `eVariationOn_id` and `eVariationOn_id_Icc` are now in Mathlib
+-- (without the hypothesis `a ≤ b`).
 
 /-- Move somewhere -/
 @[simp]
 lemma BoundedVariationOn.id_of_Icc {a b : ℝ} :  BoundedVariationOn id (.Icc a b) := by
   rcases lt_or_ge b a with hab | hab <;> simp [hab, BoundedVariationOn, eVariationOn_id_Icc]
-
-/-- From mathlib; remove when bumping -/
-theorem intervalIntegral.integral_congr_uIoo {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
-  {f g : ℝ → F} {a b : ℝ}
-  {μ : MeasureTheory.Measure ℝ} [MeasureTheory.NoAtoms μ] (h : (Set.uIoo a b).EqOn f g) :
-    ∫ x in a..b, f x ∂μ = ∫ x in a..b, g x ∂μ := by
-  apply integral_congr_ae
-  filter_upwards [μ.ae_ne <| a ⊔ b] with x _ hx
-  exact h ⟨hx.left, lt_of_le_of_ne hx.right ‹_›⟩
 
 open BoxIntegral ENNReal Metric Filter
 open BoxAdditiveMap hiding zero_apply
@@ -143,7 +116,7 @@ theorem HasStieltjesIntegral.lim (hab : a < b) (h : HasStieltjesIntegral a b B f
     (IntegrationParams.Riemann.toFilteriUnion (Ioc a b) ⊤).Tendsto (fun π ↦ ∑ x ∈ π.boxes,
     ((B (f (π.tag x 0))) (g x.upper₁ - g x.lower₁))) (nhds L) := by
   simp [of_lt, hab, HasStieltjesIntegral'] at h
-  convert h.tendsto with π
+  convert! h.tendsto with π
   simp [integralSum]
 
 /-- The predicate `HasStieltjesIntegral` matches the usual epsilon-delta definition, at least if
@@ -158,7 +131,7 @@ theorem hasStieltjesIntegral_iff_lim_sum (hab : a < b) : HasStieltjesIntegral a 
 theorem HasRiemannIntegral.lim (hab : a < b) (h : HasRiemannIntegral a b f M) :
     (IntegrationParams.Riemann.toFilteriUnion (Ioc a b) ⊤).Tendsto (fun π ↦ ∑ x ∈ π.boxes,
     (x.len • (f (π.tag x 0)))) (nhds M) := by
-  convert HasStieltjesIntegral.lim hab h
+  convert! HasStieltjesIntegral.lim hab h
 
 theorem hasRiemannIntegral_iff_lim_sum (hab : a < b) : HasRiemannIntegral a b f M ↔
     ∀ ε > 0, ∃ δ > 0, ∀ π : TaggedPrepartition (Ioc a b), π.IsHenstock → π.IsPartition
@@ -215,7 +188,7 @@ theorem RiemannIntegrable.bounded (h : RiemannIntegrable a b f) :
     exact absurd hJ h'
   have hpart (p : Bool) : (π p).IsPartition := by
     intro x hx; simp only [Even.box, hab, mem_Ioc, isValue] at hx
-    refine ⟨e.gridbox (e.index (x 0)), ?_, by convert hmem hx.1 hx.2⟩
+    refine ⟨e.gridbox (e.index (x 0)), ?_, by convert! hmem hx.1 hx.2⟩
     rw [←mem_boxes]
     simp only [Even.toPrepartition, isValue, mem_image, π]
     exact ⟨e.index (x 0), by simp [←e.mem_box_iff]; grind, by rfl⟩
@@ -232,7 +205,7 @@ theorem RiemannIntegrable.bounded (h : RiemannIntegrable a b f) :
         simp only [isValue, true_and, Bool.false_eq_true, false_and, ↓reduceIte, dist_eq_norm,
           ← sum_sub_distrib, π]
         congr; symm
-        convert sum_eq_single (e.gridbox (e.index x)) ?_ ?_ using 1
+        convert! sum_eq_single (e.gridbox (e.index x)) ?_ ?_ using 1
         · have : ∃ a ∈ e.indices, e.gridbox a = e.gridbox (e.index x) :=
             ⟨e.index x, by simp [←e.mem_box_iff]; lia, rfl⟩
           simp [← smul_sub, this, Box.len, Box.upper₁, Box.lower₁]
@@ -282,7 +255,7 @@ theorem HasStieltjesIntegral.map (hB : ∀ e y, Ψ (B e y) = B' (φ e) (ψ y))
     HasStieltjesIntegral a b B' (φ ∘ f) (ψ ∘ g) (Ψ L) := by
   wlog hab : a ≤ b
   · rw [symm_iff] at h ⊢
-    convert this hB h (by order) using 1
+    convert! this hB h (by order) using 1
     simp
   obtain rfl | hab := hab.eq_or_lt
   · simp_all
@@ -291,7 +264,7 @@ theorem HasStieltjesIntegral.map (hB : ∀ e y, Ψ (B e y) = B' (φ e) (ψ y))
 
 theorem HasRiemannIntegral.map (h : HasRiemannIntegral a b f M) :
     HasRiemannIntegral a b (φ ∘ f) (φ M) := by
-  convert HasStieltjesIntegral.map (ψ := .id ℝ ℝ) ?_ h
+  convert! HasStieltjesIntegral.map (ψ := .id ℝ ℝ) ?_ h
   simp
 
 theorem StieltjesIntegrable.map (hB : ∀ e y, Ψ (B e y) = B' (φ e) (ψ y))
@@ -352,7 +325,7 @@ theorem HasStieltjesIntegral.add_left
     HasStieltjesIntegral a b B (f₁ + f₂) g (L₁ + L₂) := by
   wlog h : a ≤ b
   · rw [symm_iff] at h₁ h₂ ⊢
-    convert this h₁ h₂ (by order) using 1
+    convert! this h₁ h₂ (by order) using 1
     abel
   obtain rfl | h := h.eq_or_lt
   · simp_all
@@ -378,7 +351,7 @@ theorem stieltjesIntegral_add_left (h₁ : StieltjesIntegrable a b B f₁ g)
 
 theorem HasStieltjesIntegral.smul_left (h : HasStieltjesIntegral a b B f g L) (c : ℝ) :
     HasStieltjesIntegral a b B (c • f) g (c • L) := by
-  convert h.map (φ := .lsmul ℝ ℝ c) (ψ := .id ℝ F) (Ψ := .lsmul ℝ ℝ c) ?_ using 1
+  convert! h.map (φ := .lsmul ℝ ℝ c) (ψ := .id ℝ F) (Ψ := .lsmul ℝ ℝ c) ?_ using 1
   simp
 
 theorem HasRiemannIntegral.smul (h : HasRiemannIntegral a b f M) (c : ℝ) :
@@ -396,7 +369,7 @@ theorem stieltjesIntegral_smul_left (h : StieltjesIntegrable a b B f g) (c : ℝ
   (h.hasStieltjesIntegral.smul_left c).stieltjesIntegral_eq
 
 theorem HasStieltjesIntegral.neg_left (h : HasStieltjesIntegral a b B f g L) :
-    HasStieltjesIntegral a b B (-f) g (-L) := by convert h.smul_left (-1) using 1 <;> simp
+    HasStieltjesIntegral a b B (-f) g (-L) := by convert! h.smul_left (-1) using 1 <;> simp
 
 theorem HasRiemannIntegral.neg (h : HasRiemannIntegral a b f M) :
     HasRiemannIntegral a b (-f) (-M) := HasStieltjesIntegral.neg_left h
@@ -427,7 +400,7 @@ theorem riemannIntegral_neg : riemannIntegral a b (-f) = -riemannIntegral a b f 
 
 theorem HasStieltjesIntegral.sub_left (h₁ : HasStieltjesIntegral a b B f₁ g L₁)
     (h₂ : HasStieltjesIntegral a b B f₂ g L₂) : HasStieltjesIntegral a b B (f₁ - f₂) g (L₁ - L₂)
-    := by convert h₁.add_left (h₂.neg_left) using 1 <;> abel
+    := by convert! h₁.add_left (h₂.neg_left) using 1 <;> abel
 
 theorem HasRiemannIntegral.sub (h₁ : HasRiemannIntegral a b f₁ M₁)
     (h₂ : HasRiemannIntegral a b f₂ M₂) : HasRiemannIntegral a b (f₁ - f₂) (M₁ - M₂) :=
@@ -504,7 +477,7 @@ theorem HasStieltjesIntegral.add_right (h₁ : HasStieltjesIntegral a b B f g₁
     := by
   wlog hab : a ≤ b
   · rw [symm_iff] at h₁ h₂ ⊢
-    convert this h₁ h₂ (by order) using 1
+    convert! this h₁ h₂ (by order) using 1
     abel
   obtain rfl | hab := hab.eq_or_lt
   · simp_all
@@ -524,7 +497,7 @@ theorem stieltjesIntegral_add_right (h₁ : StieltjesIntegrable a b B f g₁)
 
 theorem HasStieltjesIntegral.smul_right (h : HasStieltjesIntegral a b B f g L) (c : ℝ) :
     HasStieltjesIntegral a b B f (c • g) (c • L) := by
-  convert h.map (φ := .id ℝ E) (ψ := .lsmul ℝ ℝ c) (Ψ := .lsmul ℝ ℝ c) ?_ using 1
+  convert! h.map (φ := .id ℝ E) (ψ := .lsmul ℝ ℝ c) (Ψ := .lsmul ℝ ℝ c) ?_ using 1
   simp
 
 theorem StieltjesIntegrable.smul_right (h : StieltjesIntegrable a b B f g) (c : ℝ) :
@@ -537,7 +510,7 @@ theorem stieltjesIntegral_smul_right (h : StieltjesIntegrable a b B f g) (c : �
   (h.hasStieltjesIntegral.smul_right c).stieltjesIntegral_eq
 
 theorem HasStieltjesIntegral.neg_right (h : HasStieltjesIntegral a b B f g L) :
-    HasStieltjesIntegral a b B f (-g) (-L) := by convert h.smul_right (-1) using 1 <;> simp
+    HasStieltjesIntegral a b B f (-g) (-L) := by convert! h.smul_right (-1) using 1 <;> simp
 
 theorem StieltjesIntegrable.neg_right (h : StieltjesIntegrable a b B f g) :
     StieltjesIntegrable a b B f (-g) := h.hasStieltjesIntegral.neg_right.stieltjesIntegrable
@@ -554,7 +527,7 @@ theorem stieltjesIntegral_neg_right : ∫⟨B⟩ x in a..b, f x ∂(-g) = -∫�
 
 theorem HasStieltjesIntegral.sub_right (h₁ : HasStieltjesIntegral a b B f g₁ L₁)
     (h₂ : HasStieltjesIntegral a b B f g₂ L₂) : HasStieltjesIntegral a b B f (g₁ - g₂) (L₁ - L₂)
-    := by convert h₁.add_right (h₂.neg_right) using 1 <;> abel
+    := by convert! h₁.add_right (h₂.neg_right) using 1 <;> abel
 
 theorem StieltjesIntegrable.sub_right (h₁ : StieltjesIntegrable a b B f g₁)
     (h₂ : StieltjesIntegrable a b B f g₂) : StieltjesIntegrable a b B f (g₁ - g₂) :=
@@ -608,7 +581,7 @@ theorem HasStieltjesIntegral.add_bil (h₁ : HasStieltjesIntegral a b B₁ f g L
     := by
   wlog hab : a ≤ b
   · rw [symm_iff] at h₁ h₂ ⊢
-    convert this h₁ h₂ (by order) using 1
+    convert! this h₁ h₂ (by order) using 1
     abel
   obtain rfl | hab := hab.eq_or_lt
   · simp_all
@@ -618,7 +591,7 @@ theorem HasStieltjesIntegral.add_bil (h₁ : HasStieltjesIntegral a b B₁ f g L
 
 theorem HasStieltjesIntegral.smul_bil (h : HasStieltjesIntegral a b B f g L) (c : ℝ) :
     HasStieltjesIntegral a b (c • B) f g (c • L) := by
-  convert h.map (φ := .id ℝ E) (ψ := .id ℝ F) (Ψ := .lsmul ℝ ℝ c) ?_ using 1
+  convert! h.map (φ := .id ℝ E) (ψ := .id ℝ F) (Ψ := .lsmul ℝ ℝ c) ?_ using 1
   simp
 
 theorem StieltjesIntegrable.smul_bil (h : StieltjesIntegrable a b B f g) (c : ℝ) :
@@ -630,7 +603,7 @@ theorem stieltjesIntegral_smul_bil (h : StieltjesIntegrable a b B f g) (c : ℝ)
   (h.hasStieltjesIntegral.smul_bil c).stieltjesIntegral_eq
 
 theorem HasStieltjesIntegral.neg_bil (h : HasStieltjesIntegral a b B f g L) :
-    HasStieltjesIntegral a b (-B) f g (-L) := by convert h.smul_bil (-1) <;> ext <;> simp
+    HasStieltjesIntegral a b (-B) f g (-L) := by convert! h.smul_bil (-1) <;> ext <;> simp
 
 theorem StieltjesIntegrable.neg_bil (h : StieltjesIntegrable a b B f g) :
     StieltjesIntegrable a b (-B) f g := (h.hasStieltjesIntegral.neg_bil).stieltjesIntegrable
@@ -647,7 +620,7 @@ theorem stieltjesIntegral_neg_bil : ∫⟨-B⟩ x in a..b, f x ∂g = -∫⟨B�
 
 theorem HasStieltjesIntegral.sub_bil (h₁ : HasStieltjesIntegral a b B₁ f g L₁)
     (h₂ : HasStieltjesIntegral a b B₂ f g L₂) : HasStieltjesIntegral a b (B₁ - B₂) f g (L₁ - L₂)
-    := by convert h₁.add_bil (h₂.neg_bil) using 1 <;> abel
+    := by convert! h₁.add_bil (h₂.neg_bil) using 1 <;> abel
 
 theorem StieltjesIntegrable.sub_bil (h₁ : StieltjesIntegrable a b B₁ f g)
     (h₂ : StieltjesIntegrable a b B₂ f g) : StieltjesIntegrable a b (B₁ - B₂) f g :=
@@ -740,7 +713,7 @@ theorem HasStieltjesIntegral.add_adjacent (h : StieltjesIntegrable a c B f g)
   · simp_all
   obtain rfl | hac := eq_or_ne a c
   · simp_all; simp [h₁.unique h₂.symm]
-  convert h₃
+  convert! h₃
   rcases lt_or_gt_of_ne hab with hab | hba <;>
   rcases lt_or_gt_of_ne hbc with hbc | hcb <;>
   rcases lt_or_gt_of_ne hac with hac | hca <;>
@@ -804,7 +777,11 @@ lemma sum_edist_of_disjoint_le {c d : ℝ} {S : Finset (Box (Fin 1))}
     have hRight : ∀ K ∈ S.erase J, J.upper₁ ≤ K.lower₁ := by
       intro K hKerase
       specialize hdj hJS (mem_of_mem_erase hKerase) (mem_erase.mp hKerase).1.symm
-      grind [Box.disjoint_iff₁, Box.lower_lt_upper₁]
+      have h1 := hJ_min K (mem_of_mem_erase hKerase)
+      have h2 := K.lower_lt_upper₁
+      rcases Box.disjoint_iff₁.mp hdj with h | h
+      · exact h
+      · linarith
     have IH := ih hJ_bd.2 (fun K hK ↦ ⟨hRight K hK, (hbd K (mem_of_mem_erase hK)).2⟩)
       (hdj.mono (coe_subset.mpr (erase_subset _ _)))
       (by rw [card_erase_of_mem hJS, hScard]; omega)
@@ -839,8 +816,8 @@ theorem stieltjesIntegral_le_integral_bound_of_variation (hab : a ≤ b) (hK : �
   apply sum_le_sum; intro J hJ
   specialize hfS (π.tag J 0) (by simpa [hab] using π.tag_mem_Icc J)
   grw [le_opNorm, le_opNorm, mul_assoc]; gcongr
-  · grw [← hK, ← norm_nonneg]
-  · grw [← hfS, ← norm_nonneg]
+  · exact le_trans (by positivity) hK
+  · exact (norm_nonneg _).trans hfS
   replace hJ := π.le_of_mem hJ
   have hJ' := J.lower_lt_upper₁
   have := Box.Icc₁_subset_Icc₁ hJ
@@ -850,17 +827,17 @@ theorem stieltjesIntegral_le_integral_bound_of_variation (hab : a ≤ b) (hK : �
   grw [← dist_eq_norm, (hg.mono this).dist_le (by grind) (by grind)]
   rw [le_sub_iff_add_le', ← toReal_add h1 h2, toReal_le_toReal (Finiteness.add_ne_top h1 h2)
     (hg.mono (by grind))]
-  convert le_of_eq (eVariationOn.Icc_add_Icc (s := .univ) g hJ.1 hJ'.le (by simp)) <;> simp
+  convert! le_of_eq (eVariationOn.Icc_add_Icc (s := .univ) g hJ.1 hJ'.le (by simp)) <;> simp
 
 theorem riemannIntegral_le_integral_of_bound {M : E} {L' : ℝ} {S : ℝ → ℝ} (hab : a ≤ b)
     (hf : HasRiemannIntegral a b f M) (hfS : ∀ x ∈ Set.Icc a b, ‖f x‖ ≤ S x)
     (hS : HasRiemannIntegral a b S L') : ‖M‖ ≤ L' := by
   have : mul ℝ ℝ = (lsmul ℝ ℝ).flip := by aesop
-  convert stieltjesIntegral_le_integral_bound_of_variation (L' := L') (K := 1) hab
+  convert! stieltjesIntegral_le_integral_bound_of_variation (L' := L') (K := 1) hab
     (by simp [opNorm_lsmul_le]) .id_of_Icc hf hfS ?_ using 1
   · simp
   rw [hasStieltjesIntegral_congr (g₂ := id - (fun _ ↦ a)) (Set.eqOn_refl _ _)]
-  · rw [this]; convert hS.sub_right (L₁ := L') (L₂ := 0) ?_ <;> simp
+  · rw [this]; convert! hS.sub_right (L₁ := L') (L₂ := 0) ?_ <;> simp
   intro x hx; simp [hab] at hx; simp [hx]
 
 /-- Theorem A.4. Suppose that g has bounded variation. Then
@@ -903,7 +880,7 @@ theorem riemannIntegral_le_bound_mul_length {M : E} {M' : ℝ} (hab : a ≤ b)
     : ‖M‖ ≤ M' * (b - a) := by
   have hB : ‖((lsmul ℝ ℝ).flip : E →L[ℝ] ℝ →L[ℝ] E)‖ ≤ 1 := by simp [opNorm_lsmul_le]
   have h := stieltjesIntegral_le_bound_mul hab hB (Set.uIcc_of_le hab ▸ .id_of_Icc) hf hfS
-  rwa [one_mul, eVariationOn_id_Icc hab, toReal_ofReal (by linarith)] at h
+  rwa [one_mul, eVariationOn_id_Icc, toReal_ofReal (by linarith)] at h
 
 theorem HasStieltjesIntegral.cauchy_of_uniformCauchy_of_boundedVariationOn
     {fn : ι → ℝ → E} {Ln : ι → G} (hfn : ∀ n, HasStieltjesIntegral a b B (fn n) g (Ln n))
@@ -967,7 +944,7 @@ theorem HasStieltjesIntegral.of_uniform_of_boundedVariationOn [CompleteSpace G]
     nlinarith
   have : dist (∑ J ∈ π.boxes, B (f (π.tag J 0)) (g J.upper₁ - g J.lower₁))
       (∑ J ∈ π.boxes, B (fn n (π.tag J 0)) (g J.upper₁ - g J.lower₁)) ≤ ε / 3 := by
-    simp_rw [dist_eq_norm, ← Finset.sum_sub_distrib, ← (B _).sub_apply, ← B.map_sub]
+    simp_rw [dist_eq_norm, ← Finset.sum_sub_distrib, ← ContinuousLinearMap.sub_apply, ← B.map_sub]
     refine (norm_sum_B_le_of_norm_le_of_boundedVariationOn (B := B) (L' := ε_s)
       (f := fun x ↦ f x - fn n x) hab hg ?_ π).trans h_first_third
     intro x hx; rw [← dist_eq_norm]; rw [← Set.uIcc_of_lt hab] at hx; exact (h_unif x hx).le
@@ -1339,7 +1316,7 @@ private theorem RiemannIntegrable.mul_indicator (hab : a < b) (c : ℝ)
       grind
     apply StieltjesIntegrable.mul_indicator_left hab hc _ (by fun_prop) h.bounded
     exact h.to_subinterval hab (by grind) hc
-  convert this.map (φ := (ContinuousLinearMap.apply ℝ _ t).comp B)
+  convert! this.map (φ := (ContinuousLinearMap.apply ℝ _ t).comp B)
   ext; simp [Set.indicator]
   split_ifs <;> simp
 
@@ -1362,11 +1339,11 @@ private theorem RiemannIntegrable.mul_simple (hab : a < b)
     (hf : RiemannIntegrable a b f) (hs : simple s)
     :  RiemannIntegrable a b (fun x ↦ B (f x) (s x)) := by
   obtain ⟨ S, t, rfl ⟩ := hs
-  convert_to RiemannIntegrable a b (∑ J ∈ S, (fun x ↦ (B (f x))
+  convert_to! RiemannIntegrable a b (∑ J ∈ S, (fun x ↦ (B (f x))
       (J.toSet₁.indicator (fun x ↦ t J) x)))
   · ext; simp
   refine .finset_sum (fun s hs ↦ ?_)
-  convert hf.mul_indicator_box hab s (t s) (B := B)
+  convert! hf.mul_indicator_box hab s (t s) (B := B)
   simp [Set.indicator]
   split_ifs <;> simp
 
@@ -1415,6 +1392,7 @@ private theorem ContinuousOn.lim_of_simple (hab : a < b) (hg : ContinuousOn g (.
     grw [I.dist_lt_len_of_mem₁ this I.upper_mem₁, (e N).len_of_subbox hI, Even.δ]
     unfold e; simp; field_simp
     grw [← hN]
+    refine le_of_lt ?_
     calc
       _ = (b - a) / δ * δ := by field_simp
       _ < _ := by gcongr; apply Nat.lt_floor_add_one
@@ -1450,9 +1428,13 @@ theorem RiemannIntegrable.mul_continuous {f : ℝ → E} {g : ℝ → F}
     obtain ⟨ N, hN ⟩ := hlim (ε / ((‖B‖ + 1) * (max M 1))) (by positivity)
     use N
     peel hN with n hn x hx hconv
-    grw [le_opNorm, le_opNorm, hconv, (hM x hx).trans (le_max_left M 1)]
-    field_simp
-    linarith
+    grw [le_opNorm, le_opNorm]
+    have hfx : ‖f x‖ ≤ max M 1 := (hM x hx).trans (le_max_left M 1)
+    have hpos : 0 < (‖B‖ + 1) * max M 1 := by positivity
+    calc ‖B‖ * ‖f x‖ * ‖g x - s n x‖ ≤ (‖B‖ + 1) * max M 1 * ‖g x - s n x‖ := by
+          gcongr; linarith
+      _ < (‖B‖ + 1) * max M 1 * (ε / ((‖B‖ + 1) * max M 1)) := by gcongr
+      _ = ε := by field_simp
   exact .of_uniform (fun n ↦ hf.mul_simple hab (hs n)) hlim
 
 end Cut
@@ -1484,10 +1466,10 @@ private lemma integrable_of_continuousOn_of_boundedVariationOn [CompleteSpace G]
     have := τ₁.tag_mem_Icc J
     have := τ₂.tag_mem_Icc J
     have hτ₁_upper : |τ₁.tag J 0 - J.upper₁| ≤ δ/4 := by
-      simpa [mem_closedBall, dist_pi_le_iff', Real.dist_eq, abs_sub_comm]
+      simpa [τ₁, Box.upper₁, mem_closedBall, dist_pi_le_iff', Real.dist_eq, abs_sub_comm]
         using hπ₁.isSubordinate.infPrepartition _ J hJτ₁ J.upper_mem_Icc
     have hτ₂_upper : |J.upper₁ - τ₂.tag J 0| ≤ δ/4 := by
-      simpa [mem_closedBall, dist_pi_le_iff', Real.dist_eq]
+      simpa [τ₂, Box.upper₁, mem_closedBall, dist_pi_le_iff', Real.dist_eq]
         using hπ₂.isSubordinate.infPrepartition _ J
           (mem_infPrepartition_comm.mp hJτ₁) J.upper_mem_Icc
     grw [← map_sub, (vol J).le_opNorm]; gcongr
@@ -1532,7 +1514,7 @@ variable [CompleteSpace F]
 private theorem variation_of_contDiffOn_le (hab : a < b) (hg : ContDiffOn ℝ 1 g (.Icc a b)) :
     eVariationOn g (.Icc a b) ≤ ENNReal.ofReal (∫ x in a..b, ‖derivWithin g (.Icc a b) x‖) := by
   have hg' := hg.continuousOn_derivWithin (uniqueDiffOn_Icc hab) (le_refl _)
-  convert iSup_le ?_; rintro ⟨ n, ⟨ y, hmono, hmem ⟩ ⟩
+  convert! iSup_le ?_; rintro ⟨ n, ⟨ y, hmono, hmem ⟩ ⟩
   simp only [edist_dist]
   rw [←ofReal_sum_of_nonneg (by intros; positivity)]
   apply ofReal_le_ofReal
@@ -1542,7 +1524,7 @@ private theorem variation_of_contDiffOn_le (hab : a < b) (hg : ContDiffOn ℝ 1 
       replace hmono : y i ≤ y (i + 1) := hmono (by omega)
       grw [dist_eq_norm, ←integral_derivWithin_Icc_of_contDiffOn_Icc (hg.mono (by grind)) hmono,
          ←norm_integral_le_integral_norm hmono]
-      convert le_refl _ using 2
+      convert! le_refl _ using 2
       apply intervalIntegral.integral_congr_uIoo; intro x hx
       simp [Set.uIoo_of_le hmono] at hx hmem
       rw [derivWithin_of_mem_nhds, derivWithin_of_mem_nhds] <;>
@@ -1625,7 +1607,7 @@ theorem variation_of_contDiffOn (hab : a ≤ b) (hg : ContDiffOn ℝ 1 g (.Icc a
         _ = ‖(∫ x in e.grid i..e.grid (i + 1), g' x)
             + ∫ x in e.grid i..e.grid (i + 1), g' (e.grid i) - g' x‖ + ε / (2 * e.N) := by
           congr
-          convert intervalIntegral.integral_add (hg'.mono (hIcc hi)).intervalIntegrable ?_
+          convert! intervalIntegral.integral_add (hg'.mono (hIcc hi)).intervalIntegrable ?_
           · abel
           · infer_instance
           exact (ContinuousOn.mono (by fun_prop) (hIcc hi)).intervalIntegrable
@@ -1681,7 +1663,7 @@ theorem HasStieltjesIntegral.of_contDiffOn_eq_riemann (hg : ContDiffOn ℝ 1 g (
   obtain ⟨ δ₁, hδ₁pos, hδ₁ ⟩ := (hasRiemannIntegral_iff_lim_sum hab).mp hriem.hasRiemannIntegral
     (ε / 3) (by positivity)
   refine ⟨ min (NNReal.mk δ₀ hδ₀pos.le) δ₁, ?_, ?_⟩
-  · simpa [hδ₁pos, NNReal.mk] using hδ₀pos
+  · exact lt_min ((NNReal.coe_pos (r := NNReal.mk δ₀ hδ₀pos.le)).mp hδ₀pos) hδ₁pos
   peel hδ₁ with π hhen hpart h
   rw [le_inf_iff]; rintro ⟨ hmesh₁, hmesh₂ ⟩
   calc
@@ -1722,6 +1704,7 @@ theorem HasStieltjesIntegral.of_contDiffOn_eq_riemann (hg : ContDiffOn ℝ 1 g (
           grind
         _ ≤ _ := by
           simp; field_simp; grw [←Std.left_le_max]; ring_nf; apply le_refl
+          linarith [J.lower_lt_upper₁]
     _ ≤ ε/3 + ε/3 := by
       rw [←Finset.sum_div, ←Finset.mul_sum, (ofDiff id).sum_partition_boxes (by simp) hpart]
       simp [hab]; field_simp; norm_num

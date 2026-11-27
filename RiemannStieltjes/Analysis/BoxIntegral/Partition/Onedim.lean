@@ -387,7 +387,8 @@ theorem gridbox_toSet₁ : (e.gridbox n).toSet₁ = Set.Ioc (e.grid n) (e.grid (
   by simp
 
 theorem gridbox_le_box {n : ℤ} (hn : n ∈ e.indices) : e.gridbox n ≤ e.box := by
-  simpa [gridbox, box, Ioc_le_Ioc_iff, e.hab, e.grid_succ_gt n, indices] using hn
+  simpa [gridbox, box, Ioc_le_Ioc_iff, e.hab, e.grid_succ_gt n, indices, Int.add_one_le_iff]
+    using hn
 
 noncomputable def index : ℝ → ℤ := fun x ↦ ⌈(x - e.a) / e.δ⌉ - 1
 
@@ -423,13 +424,17 @@ noncomputable def toPrepartition : Prepartition e.box :=
       simp only [coe_image, Set.mem_image] at hI hJ
       obtain ⟨i, hi, rfl⟩ := hI
       obtain ⟨j, hj, rfl⟩ := hJ
+      have hij : i ≠ j := fun h ↦ hdisj (h ▸ rfl)
       simp [Box.disjoint_iff₁, e.grid_strictMono.le_iff_le]
       lia
   }
 
 @[simp]
 theorem mem_toPrepartition_iff (J : Box (Fin 1)) :
-    J ∈ e.toPrepartition ↔ ∃ n ∈ e.indices, e.gridbox n = J := by simp [toPrepartition]
+    J ∈ e.toPrepartition ↔ ∃ n ∈ e.indices, e.gridbox n = J := by
+  classical
+  change J ∈ (e.indices).image e.gridbox ↔ _
+  exact mem_image
 
 theorem toPrepartition_isPartition : (e.toPrepartition).IsPartition := by
   intro x hx
@@ -440,8 +445,7 @@ theorem toPrepartition_isPartition : (e.toPrepartition).IsPartition := by
   simp [← grid_lt_iff, ← le_grid_iff, hx]
 
 theorem len_of_subbox {J : Box (Fin 1)} (hJ : J ∈ e.toPrepartition) : J.len = e.δ := by
-  simp only [toPrepartition, mem_mk, mem_image] at hJ
-  obtain ⟨n, hn, rfl⟩ := hJ
+  obtain ⟨n, hn, rfl⟩ := (e.mem_toPrepartition_iff J).mp hJ
   simp
 
 
