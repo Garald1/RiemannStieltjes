@@ -135,7 +135,7 @@ theorem RiemannIntegrable.oscillation_tendsto_zero (hab : a < b) {f : ℝ → �
     }
   have hπ' (p : Bool) : dist (∑ J ∈ π.boxes, J.len • f ((π' p).tag J 0))
     (riemannIntegral a b f) < ε / 5 := by
-    convert hδ (π' p) (fun J hJ ↦ ?_) hπ hmesh
+    convert! hδ (π' p) (fun J hJ ↦ ?_) hπ hmesh
     simp only [π']
     split_ifs
     · simpa [hab] using ((hxup J).2 hJ).1
@@ -179,7 +179,7 @@ private theorem TaggedPrepartition.darboux_bounds {f : ℝ → ℝ}
   obtain ⟨ J, hJ, hbound ⟩ := hπ (fun _ ↦ x) (by simpa [hab] using hx)
   have h (g : Box (Fin 1) → ℝ → ℝ) :
     (∑ I ∈ π.boxes, I.toSet₁.indicator (g I)) x = g J x := by
-    rw [sum_apply, sum_eq_single J]
+    rw [Finset.sum_apply, sum_eq_single J]
     · simp_all
     · intro I hI; simp only [ne_eq, Set.indicator_apply_eq_zero]
       intro hIJ hxI
@@ -224,7 +224,7 @@ private theorem lintegral_eq_sum (hab : a < b) (hhen : π.IsHenstock)
       .ofReal (∑ J ∈ π.boxes, J.len * (sSup (f '' J.Icc₁) - sInf (f '' J.Icc₁)))
   := by
   simp only [← Pi.sub_apply, upper_darboux, lower_darboux, ← sum_sub_distrib, ← Set.indicator_sub',
-  sum_apply]
+  Finset.sum_apply]
   have := H1 π hab
   have hnonneg : ∀ J ∈ π.boxes, 0 ≤ sSup (f '' J.Icc₁) - sInf (f '' J.Icc₁) := by
     intro J hJ; linarith [H3 hab hhen hM J hJ]
@@ -291,7 +291,7 @@ private theorem RiemannIntegrable.intervalIntegrable_scalar (hf : RiemannIntegra
     rw [Set.uIoc_of_le hab.le]
     exact π.darboux_bounds hab hM hπ
   · apply tendstoInMeasure_of_tendsto_eLpNorm one_ne_zero _ (by fun_prop) _
-    · convert fun π ↦ ((hmes_hi π).sub (hmes_lo π)).aestronglyMeasurable using 1
+    · convert! fun π ↦ ((hmes_hi π).sub (hmes_lo π)).aestronglyMeasurable using 1
     simp only [Pi.sub_apply, sub_zero, Set.uIoc_of_le hab.le]
     exact hf.darboux_integrable hab
   simp only [tendsto_iff_eventually, Riemann_toFilteriUnion_eventually_iff_mesh, gt_iff_lt,
@@ -324,7 +324,8 @@ private theorem RiemannIntegrable.intervalIntegrable_scalar (hf : RiemannIntegra
     have : J ≤ Ioc a b := (π N).le_of_mem hJ
     simpa [Box.Icc₁_eq, this, π, hab, Box.upper₁] using J.lower_le_upper₁
   have : (π N).IsPartition := (e N).toPrepartition_isPartition
-  simpa [TaggedPrepartition.isPartition_iff_iUnion_eq] using this
+  exact (by simpa [TaggedPrepartition.isPartition_iff_iUnion_eq] using this :
+    (π N).iUnion = (e N).box)
 
 private theorem HasRiemannIntegral.intervalIntegral_eq_scalar (hf : HasRiemannIntegral a b f L)
     (hab : a < b) : ∫ x in a..b, f x = L := by
@@ -359,7 +360,7 @@ private theorem HasRiemannIntegral.intervalIntegral_eq_scalar (hf : HasRiemannIn
         (hint.intervalIntegrable_scalar hab) (π.upper_darboux_integrable f)
         (fun x hx ↦ (π.darboux_bounds hab hM hπ x (by grind)).2)
       _ = _ := by
-        simp only [upper_darboux, sum_apply, integral_finsetSum (π.integrable_of_piecewise _)]
+        simp only [upper_darboux, Finset.sum_apply, integral_finsetSum (π.integrable_of_piecewise _)]
         apply sum_congr rfl; intro J hJ
         rw [integral_eq_integral_of_support_subset]
         · simp [Box.len, J.lower_le_upper₁]
@@ -370,7 +371,7 @@ private theorem HasRiemannIntegral.intervalIntegral_eq_scalar (hf : HasRiemannIn
           (π.lower_darboux_integrable f) (hint.intervalIntegrable_scalar hab)
           (fun x hx ↦ (π.darboux_bounds hab hM hπ x (by grind)).1)
       _ = _ := by
-        simp only [lower_darboux, sum_apply, integral_finsetSum (π.integrable_of_piecewise _)]
+        simp only [lower_darboux, Finset.sum_apply, integral_finsetSum (π.integrable_of_piecewise _)]
         apply sum_congr rfl; intro J hJ
         rw [integral_eq_integral_of_support_subset]
         · simp [Box.len, J.lower_le_upper₁]
@@ -397,22 +398,22 @@ private theorem riemannIntegral_eq_intervalIntegral_euclidean {ι : Type*} [Fint
   · simp
   set L := riemannIntegral a b f
   have hriem (i : ι) : HasRiemannIntegral a b (fun x ↦ f x i) (L i) := by
-    convert hf.hasRiemannIntegral.map (φ := .proj i)
+    convert! hf.hasRiemannIntegral.map (φ := .proj i)
   have hinteg (i : ι) : IntervalIntegrable (fun x ↦ f x i) volume a b :=
     (hriem i).riemannIntegrable.intervalIntegrable_scalar hab
   have hinteg' (i : ι) : IntervalIntegrable (fun x ↦ Set.indicator {i} (f x)) volume a b := by
-    convert (ContinuousLinearMap.toSpanSingleton ℝ
+    convert! (ContinuousLinearMap.toSpanSingleton ℝ
       (Set.indicator {i} (fun _ ↦ (1:ℝ)))).intervalIntegrable_comp (hinteg i)
     ext; simp [Set.indicator]; aesop
   have hint_eq (i : ι) : ∫ x in a..b, Set.indicator {i} (f x) = Set.indicator {i} L := by
-    convert (ContinuousLinearMap.toSpanSingleton ℝ
+    convert! (ContinuousLinearMap.toSpanSingleton ℝ
       (Set.indicator {i} (fun _ ↦ (1:ℝ)))).intervalIntegral_comp_comm (hinteg i)
     · ext; simp [Set.indicator]; aesop
     ext; simp [Set.indicator, (hriem i).intervalIntegral_eq_scalar hab]; aesop
   constructor
   · have : IntervalIntegrable (∑ i, (fun x ↦ Set.indicator {i} (f x))) volume a b :=
       .sum _ (by aesop)
-    convert this; ext1; simp
+    convert! this; ext1; simp
   calc
     _ = ∑ i, Set.indicator {i} L := by simp
     _ = ∑ i ∈ .univ, ∫ x in a..b, Set.indicator {i} (f x) := by simp_rw [hint_eq]
@@ -426,7 +427,7 @@ theorem riemannIntegral_eq_intervalIntegral [hfin : Module.Finite ℝ E]
   let T := e.toContinuousLinearMap
   let S := e.symm.toContinuousLinearMap
   have hriem := riemannIntegral_eq_intervalIntegral_euclidean (hf.map (φ := T))
-  refine ⟨ by convert S.intervalIntegrable_comp hriem.1; aesop, ?_ ⟩
+  refine ⟨ by convert! S.intervalIntegrable_comp hriem.1; aesop, ?_ ⟩
   have hriem' := congrArg S (riemannIntegral_map (φ := T) hf)
   rw [hriem.2, ←S.intervalIntegral_comp_comm hriem.1] at hriem'
   simpa [S, T] using hriem'.symm
@@ -453,7 +454,7 @@ theorem HasStieltjesIntegral.of_contDiffOn [Module.Finite ℝ G] [CompleteSpace 
     rw [derivWithin_of_mem_nhds]
     simpa [← mem_interior_iff_mem_nhds, Set.uIcc_of_lt, Set.uIoo_of_lt, hab] using hx
   rw [this]
-  convert of_contDiffOn_eq_riemann (G := G) hg hf
+  convert! of_contDiffOn_eq_riemann (G := G) hg hf
   simp only [Set.uIcc_of_lt hab] at hg
   have hriem : RiemannIntegrable a b (fun x ↦ B (f x) (g' x)) :=
     hf.mul_continuous (by simpa [g', Set.uIcc_of_lt hab] using

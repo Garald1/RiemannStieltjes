@@ -22,7 +22,6 @@ public import RiemannStieltjes.Analysis.BoxIntegral.Stieltjes.Measure
 public import RiemannStieltjes.Analysis.BoxIntegral.Stieltjes.Riemann
 public import RiemannStieltjes.Analysis.BoxIntegral.Stieltjes.RiemannStieltjesSum
 public import RiemannStieltjes.Analysis.BoxIntegral.Stieltjes.Sum
-public import RiemannStieltjes.Analysis.BoxIntegral.Stieltjes.Unused
 public import RiemannStieltjes.Analysis.BoxIntegral.Stieltjes.VariationBounds
 public import RiemannStieltjes.Analysis.Fourier.FejerKernel
 public import RiemannStieltjes.Analysis.Fourier.Fejer

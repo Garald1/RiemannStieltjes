@@ -137,14 +137,13 @@ theorem HasStieltjesIntegral.of_comp_strictMono_continuous (hab : a ≤ b)
         isValue, Ioc.upper, hφab, forall_const] at this ⊢
       refine ⟨hmono' ha_mem (by simp [this]) this.1, hmono' (by simp [this]) hb_mem this.2⟩
   }
-  convert h π' (fun J' hJ' ↦ ?_) (fun x' hx' ↦ ?_) (fun J' hJ' ↦ ?_) using 2
+  convert! h π' (fun J' hJ' ↦ ?_) (fun x' hx' ↦ ?_) (fun J' hJ' ↦ ?_) using 2
   · symm
     rw [show π'.boxes = π.boxes.image (Ioc.comp φ) from rfl, Finset.sum_image hinj]
     refine Finset.sum_congr rfl fun J hJ ↦ ?_
     simp [π', hσ J hJ]; simp [Ioc.comp, h2 hJ]
-  · simp only [isValue, mem_mk, Prepartition.mem_mk, mem_image, mem_boxes, mem_toPrepartition,
-    Box.Icc₁_eq, Box.Icc₁_def, Set.mem_Icc, Set.mem_setOf_eq, π'] at hJ' ⊢
-    obtain ⟨J, hJπ, rfl⟩ := hJ'
+  · obtain ⟨J, hJπ, rfl⟩ := Finset.mem_image.mp (show J' ∈ π.boxes.image (Ioc.comp φ) from hJ')
+    simp only [isValue, Box.Icc₁_eq, Box.Icc₁_def, Set.mem_Icc, Set.mem_setOf_eq, π']
     specialize h1 hJπ
     simp only [hσ J hJπ]; simp only [Ioc.comp, h2 hJπ, Ioc.lower₁, isValue, Ioc.upper₁]
     have h3 := π.tag_mem_Icc J
@@ -157,19 +156,17 @@ theorem HasStieltjesIntegral.of_comp_strictMono_continuous (hab : a ≤ b)
     have := hsurj (show x' 0 ∈ Set.Icc (φ a) (φ b) by grind)
     simp only [isValue, Set.mem_image, Set.mem_Icc] at this
     obtain ⟨x, hx, hxx'⟩ := this
-    simp only [isValue, ← hxx', mem_mk, Prepartition.mem_mk,
+    simp only [isValue, ← hxx', Prepartition.mem_mk,
       mem_image, mem_boxes, mem_toPrepartition,
       exists_exists_and_eq_and, π'] at hx' ⊢
     have : a < x := by grind
     obtain ⟨J, hJπ, hxJ⟩ := hpart (fun _ ↦ x) (by simp [hab, this, hx])
-    use J, hJπ
+    refine ⟨Ioc.comp φ J, Finset.mem_image_of_mem _ hJπ, ?_⟩
     simp only [Box.mem₁, Box.toSet₁_def, Set.mem_Ioc, Ioc.comp, h2 hJπ, Ioc.lower₁,
       Ioc.upper₁] at hxJ ⊢
     specialize h1 hJπ
     exact ⟨hmono h1.1 (by simp [hx]) hxJ.1, hmono' (by simp [hx]) h1.2 hxJ.2⟩
-  simp only [isValue, mem_mk, Prepartition.mem_mk, mem_image, mem_boxes,
-    mem_toPrepartition, π'] at hJ'
-  obtain ⟨J, hJπ, rfl⟩ := hJ'
+  obtain ⟨J, hJπ, rfl⟩ := Finset.mem_image.mp (show J' ∈ π.boxes.image (Ioc.comp φ) from hJ')
   specialize h1 hJπ
   specialize h2 hJπ
   have := J.lower_lt_upper₁
@@ -245,8 +242,8 @@ theorem HasStieltjesIntegral.of_reflect
       grind
   }
   rw [← dist_neg_neg, ← Finset.sum_neg_distrib, neg_neg]
-  convert h π' (fun J' hJ' ↦ ?_) (fun x' hx' ↦ ?_) (fun J' hJ' ↦ ?_) using 2
-  · convert Finset.sum_bijective Box.reflect (Function.Involutive.bijective (fun J ↦ ?_))
+  convert! h π' (fun J' hJ' ↦ ?_) (fun x' hx' ↦ ?_) (fun J' hJ' ↦ ?_) using 2
+  · convert! Finset.sum_bijective Box.reflect (Function.Involutive.bijective (fun J ↦ ?_))
       (fun J ↦ ?_) (fun J hJ ↦ ?_)
     · simp [Box.reflect, J.lower_lt_upper_reflect₁, ← Box.eq_Ioc]
     · simp only [mem_boxes, mem_toPrepartition, Box.reflect, mem_image, π']
@@ -256,9 +253,7 @@ theorem HasStieltjesIntegral.of_reflect
         tauto
       simp_all
     simp [Box.reflect, π', J.lower_lt_upper_reflect₁, ←Box.eq_Ioc]
-  · simp only [isValue, mem_mk, Prepartition.mem_mk, mem_image, mem_boxes, mem_toPrepartition,
-    π'] at hJ'
-    obtain ⟨ J, hJπ, rfl⟩ := hJ'
+  · obtain ⟨J, hJπ, rfl⟩ := Finset.mem_image.mp (show J' ∈ π.boxes.image Box.reflect from hJ')
     have := hhen J hJπ
     simp [Box.reflect, J.lower_lt_upper_reflect₁, π', ← Box.eq_Ioc] at this ⊢
     tauto
@@ -271,12 +266,12 @@ theorem HasStieltjesIntegral.of_reflect
     choose J hJ hmem using hmem
     have h1 : ∀ᶠ y in 𝓝[>] x, y ∈ Set.Ioc (-b) (-a) := by
       filter_upwards [Ioo_mem_nhdsGT hx.2] with y hy using ⟨hx.1.trans_lt hy.1, hy.2.le⟩
-    obtain ⟨I, _, hI'⟩ : ∃ I ∈ π.boxes, ∃ᶠ y in 𝓝[>] x, J y = I := by
+    obtain ⟨I, hIπ, hI'⟩ : ∃ I ∈ π.boxes, ∃ᶠ y in 𝓝[>] x, J y = I := by
       rw [← Filter.frequently_exists_finset]
       simpa using (.of_forall hJ : ∀ᶠ y in 𝓝[>] x, J y ∈ π.boxes).frequently
     have h2 : ∃ᶠ y in 𝓝[>] x, y ∈ I.toSet₁ :=
       (hI'.and_eventually (h1.mono hmem)).mono fun _ ⟨h_eq, hy⟩ ↦ h_eq ▸ hy
-    refine ⟨I.reflect, by aesop, ?_⟩
+    refine ⟨I.reflect, (Finset.mem_image_of_mem _ hIπ : I.reflect ∈ π.boxes.image Box.reflect), ?_⟩
     simp only [Box.toSet₁_def, Set.mem_Ioc] at h2
     suffices I.lower₁ ≤ x ∧ x < I.upper₁ by
       simp [x, Box.reflect, I.lower_lt_upper_reflect₁] at this ⊢; grind
@@ -287,9 +282,7 @@ theorem HasStieltjesIntegral.of_reflect
     · obtain ⟨y, ⟨_, hyu⟩, hyx⟩ :=
         (h2.and_eventually (self_mem_nhdsWithin (s := Set.Ioi x))).exists
       exact hyx.trans_le hyu
-  simp only [isValue, mem_mk, Prepartition.mem_mk, mem_image, mem_boxes, mem_toPrepartition,
-    π'] at hJ'
-  obtain ⟨ J, hJπ, rfl⟩ := hJ'
+  obtain ⟨J, hJπ, rfl⟩ := Finset.mem_image.mp (show J' ∈ π.boxes.image Box.reflect from hJ')
   specialize hmesh J hJπ
   simpa [Box.reflect_len] using hmesh
 
@@ -330,6 +323,7 @@ theorem stieltjesIntegral_of_comp_strictAnti_continuous (hab : a ≤ b)
 /-- Reflection for the Riemann integral: `∫_{-b}^{-a} f(-x) dx = ∫_a^b f(x) dx`. -/
 theorem HasRiemannIntegral.of_reflect {M : E} (h : HasRiemannIntegral a b f M) :
     HasRiemannIntegral (-b) (-a) (f ∘ Neg.neg) M := by
+  unfold HasRiemannIntegral
   simpa [show (-Neg.neg : ℝ → ℝ) = id by ext; simp]
     using (HasStieltjesIntegral.of_reflect h).neg_right
 

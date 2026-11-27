@@ -42,11 +42,11 @@ theorem BoundedVariationOn.subsingleton {α : Type*} [LinearOrder α] {E : Type*
   BoundedVariationOn f s := by
     simp [BoundedVariationOn, hs]
 
-theorem MonotoneOn.boundedVariationOn {a b : ℝ} {f : ℝ → ℝ}
+theorem MonotoneOn.boundedVariationOn_Icc {a b : ℝ} {f : ℝ → ℝ}
     (hf : MonotoneOn f (.Icc a b)) :
     BoundedVariationOn f (.Icc a b) := by
   rcases lt_trichotomy a b with (hab | rfl | hab)
-  · convert hf.locallyBoundedVariationOn a b _ _ <;> grind
+  · convert! hf.locallyBoundedVariationOn a b _ _ <;> grind
   · simp
   simp [hab]
 
@@ -65,7 +65,7 @@ theorem AntitoneOn.boundedVariationOn {a b : ℝ} {f : ℝ → ℝ}
     (hf : AntitoneOn f (.Icc a b)) :
     BoundedVariationOn f (.Icc a b) := by
   have : AntitoneOn (-· : ℝ → ℝ) .univ  := by intro _ _ _ _; aesop
-  convert ((this.comp hf _).boundedVariationOn).neg using 1 <;> aesop
+  convert! ((this.comp hf _).boundedVariationOn_Icc).neg using 1 <;> aesop
 
 namespace BoxIntegral
 
@@ -79,7 +79,7 @@ theorem HasStieltjesIntegral.by_parts (hL : HasStieltjesIntegral a b B f g L) :
     HasStieltjesIntegral a b B.flip g f (B (f b) (g b) - B (f a) (g a) - L) := by
   wlog hle : a ≤ b generalizing a b L with hsymm
   · rw [HasStieltjesIntegral.symm_iff]
-    convert hsymm hL.symm (by order) using 1
+    convert! hsymm hL.symm (by order) using 1
     abel
   obtain rfl | hab := hle.eq_or_lt
   · simp_all
@@ -111,7 +111,7 @@ theorem stieltjesIntegral.by_parts (h : StieltjesIntegrable a b B f g) :
 /-- ## Some applications of integration by parts -/
 theorem HasStieltjesIntegral.of_const :
     HasStieltjesIntegral a b B (fun _ ↦ c) g (B c (g b) - B c (g a)) := by
-  convert by_parts (B := B.flip) (f := g) (g := fun _ ↦ c) (L := 0) (by simp [const_right]) using 1
+  convert! by_parts (B := B.flip) (f := g) (g := fun _ ↦ c) (L := 0) (by simp [const_right]) using 1
   simp
 
 @[simp]
@@ -123,7 +123,7 @@ theorem stieltjesIntegral.of_const : ∫⟨B⟩ _ in a..b, c ∂g = B c (g b) - 
   HasStieltjesIntegral.of_const.stieltjesIntegral_eq
 
 theorem HasRiemannIntegral.of_const : HasRiemannIntegral a b (fun _ ↦ c) ((b - a) • c) := by
-  unfold HasRiemannIntegral; convert HasStieltjesIntegral.of_const using 1
+  unfold HasRiemannIntegral; convert! HasStieltjesIntegral.of_const using 1
   simp; module
 
 @[simp]
@@ -144,7 +144,7 @@ theorem BoundedVariationOn.riemannIntegrable [CompleteSpace E] (hab : a ≤ b)
   exact .of_continuousOn_of_boundedVariationOn (by fun_prop) hf
 
 theorem MonotoneOn.riemannIntegrable {f : ℝ → ℝ} (hab : a ≤ b) (hf : MonotoneOn f (.Icc a b)) :
-    RiemannIntegrable a b f := hf.boundedVariationOn.riemannIntegrable hab
+    RiemannIntegrable a b f := hf.boundedVariationOn_Icc.riemannIntegrable hab
 
 theorem AntitoneOn.riemannIntegrable {f : ℝ → ℝ} (hab : a ≤ b) (hf : AntitoneOn f (.Icc a b)) :
     RiemannIntegrable a b f := hf.boundedVariationOn.riemannIntegrable hab
