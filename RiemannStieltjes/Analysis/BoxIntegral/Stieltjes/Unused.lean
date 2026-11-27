@@ -1,8 +1,17 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Steven Creech, Jaume de Dios, Bogdan Georgiev, Harald Helfgott, Ayush Khaitan, Terence Tao
+-/
 module
 
 public import RiemannStieltjes.Analysis.BoxIntegral.Stieltjes.Basic
 
 open BoxIntegral
+
+namespace BoxIntegral
+
+variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] {a b : ℝ}
 
 /-! ## Lexicographic ordering of one-dimensional boxes
 
@@ -69,7 +78,7 @@ lemma list_sum_eVariationOn_Icc_le_iUnion (g : ℝ → F) :
       calc
         _ = eVariationOn g J.Icc₁ + (L.map fun J ↦ eVariationOn g J.Icc₁).sum := by simp
         _ ≤ eVariationOn g J.Icc₁ + eVariationOn g Utail := by
-          simpa [add_comm, add_left_comm, add_assoc] using add_le_add_left ih _
+          exact add_le_add_right ih _
         _ ≤ eVariationOn g (J.Icc₁ ∪ Utail) := eVariationOn.add_le_union g hleft
         _ = _ := by rw [hU]
 
@@ -81,7 +90,7 @@ lemma sorted_boxes_pairwise_upper_le_lower {I : Box (Fin 1)} (π : Prepartition 
   rw [List.pairwise_iff_get]
   intro i j hij
   have hne : L.get i ≠ L.get j :=
-    fun h ↦ Nat.ne_of_lt hij <| val_eq_of_eq ((π.boxes.sort_nodup Box.lex_le).get_inj_iff.1 h)
+    fun h ↦ Nat.ne_of_lt hij <| Fin.val_eq_of_eq ((π.boxes.sort_nodup Box.lex_le).get_inj_iff.1 h)
   exact upper_le_lower_of_disjoint_box_of_lower_le (π.disjoint_coe_of_mem
     ((Finset.mem_sort Box.lex_le).1 (L.get_mem i))
     ((Finset.mem_sort Box.lex_le).1 (L.get_mem j)) hne)
@@ -113,8 +122,8 @@ lemma sum_eVariationOn_Icc_toReal_le_eVariationOn (g : ℝ → F) (hab : a < b)
       (eVariationOn g (Set.Icc a b)).toReal := by
   have hfin : ∀ J ∈ π.boxes, eVariationOn g J.Icc₁ ≠ ⊤ :=
     fun J hJ ↦ hg.mono (Icc_subset_of_box_le_Ioc hab (π.le_of_mem hJ))
-  rw [← toReal_sum hfin]
-  exact toReal_mono hg (sum_eVariationOn_Icc_le_eVariationOn g hab π)
+  rw [← ENNReal.toReal_sum hfin]
+  exact ENNReal.toReal_mono hg (sum_eVariationOn_Icc_le_eVariationOn g hab π)
 
 
 end BoxIntegral

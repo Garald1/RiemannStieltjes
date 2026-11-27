@@ -1,7 +1,8 @@
 # Porting notes
 
-Source: branch `mv-lemma-12-14` of `Garald1/mathlib-at-ICERM26` at `3992e7d7`, which is
-`dirichlet-jordan` (`90f274f8`) plus the digamma and Fourier-integral commits. That fork is on
+Source: branch `dirichlet-jordan` (`90f274f8`) of `Garald1/mathlib-at-ICERM26`. (The port was
+first made from `mv-lemma-12-14` at `3992e7d7`; its five digamma and Fourier-integral files have
+since moved to the package `WeilExplicitFormula`, with the porting changes described here.) The fork is on
 Lean v4.30.0-rc2. Target: Lean `v4.34.0-rc2` and Mathlib `71a80585ee495fc24472fd0eaffc89d94e4fd8d6`
 (IEANTN's pins).
 
@@ -19,8 +20,10 @@ The first commit of this repository is the verbatim copy, with only the imports 
   (Creech, de Dios, Georgiev, Helfgott, Khaitan, Tao); **to be confirmed by Harald**.
 - Not ported: the two-line `Set.Ioc` qualification in `Partition/Basic.lean`, and the
   `DivergenceTheorem` fixes of `mv-lemma-12-14`, both needed only inside the fork.
-- `Stieltjes/Unused.lean` is in the repository but **not in the build**: it never compiled in the
-  fork either (it uses `F`, `a`, `b` without declaring them, and the unknown `val_eq_of_eq`).
+- `Stieltjes/Unused.lean` never compiled in the fork. It now does: it gets the missing
+  `namespace BoxIntegral` and variables `F`, `a`, `b`; `val_eq_of_eq`, `toReal_sum` and
+  `toReal_mono` are qualified; one `simpa` becomes `exact add_le_add_right ih _`. It also gets the
+  copyright header of the Stieltjes files.
 
 ## Kinds of change
 
